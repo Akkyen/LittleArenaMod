@@ -20,13 +20,20 @@ namespace LittleArenaMod
             float xpGain = isFatal ? 10 : 1;
 
             PartyBase party = Hero.MainHero.PartyBelongedTo.Party;
+            
+            
+            //If there is no affected or affector or the player character is the affected return true
+            if (affectedAgent.Origin == null || affectorAgent == null)
+            {
+                return true;
+            }
+
 
             CharacterObject affectedCharacter = (CharacterObject) affectedAgent.Character;
             CharacterObject affectorCharacter = (CharacterObject) affectorAgent.Character;
 
 
-            //If there is no affected or affector or the player character is the affected return true
-            if (!affectedCharacter.IsPlayerCharacter || affectedAgent.Origin == null || affectorAgent == null)
+            if (!Hero.MainHero.CharacterObject.Equals(affectorCharacter))
             {
                 return true;
             }
