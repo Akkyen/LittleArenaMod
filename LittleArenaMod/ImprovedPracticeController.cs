@@ -15,55 +15,59 @@ namespace LittleArenaMod
         public static bool Prefix(Agent affectedAgent, Agent affectorAgent, float lastSpeedBonus,
             float lastShotDifficulty, WeaponComponentData attackerWeapon, float hitpointRatio, float damageAmount)
         {
-            bool result;
-
-
             bool isFatal = affectedAgent.Health < 1f;
 
             float xpGain = isFatal ? 10 : 1;
 
             PartyBase party = Hero.MainHero.PartyBelongedTo.Party;
 
-
             CharacterObject affectedCharacter = (CharacterObject) affectedAgent.Character;
             CharacterObject affectorCharacter = (CharacterObject) affectorAgent.Character;
 
 
+            //If there is no affected or affector or the player character is the affected return true
             if (!affectedCharacter.IsPlayerCharacter || affectedAgent.Origin == null || affectorAgent == null)
             {
                 return true;
             }
 
-            
 
-            SkillLevelingManager.OnCombatHit(affectorCharacter, affectedCharacter, null, null, lastSpeedBonus,
-                lastShotDifficulty, attackerWeapon, hitpointRatio, 0,
-                affectorAgent.MountAgent != null, affectorAgent.Team == affectedAgent.Team, false,
-                damageAmount, isFatal);
-
-            foreach (Hero hero in Hero.MainHero.CompanionsInParty)
-            {
-                hero.AddSkillXp(DefaultSkills.OneHanded, (float) xpGain);
-                hero.AddSkillXp(DefaultSkills.TwoHanded, (float) xpGain);
-                hero.AddSkillXp(DefaultSkills.Polearm, (float) xpGain);
-                hero.AddSkillXp(DefaultSkills.Bow, (float) xpGain);
-                hero.AddSkillXp(DefaultSkills.Crossbow, (float) xpGain);
-                hero.AddSkillXp(DefaultSkills.Throwing, (float) xpGain);
-                hero.AddSkillXp(DefaultSkills.Athletics, (float) xpGain);
-            }
-
-
-            
-
-            for (int i = 0; i < party.MemberRoster.Count; i++)
-            {
-                party.MemberRoster.AddXpToTroopAtIndex((int) xpGain, i);
-            }
-
+            //If the player killed a NPC he/she will get 1 gold
             if (isFatal)
             {
                 GiveGoldAction.ApplyBetweenCharacters(null, Hero.MainHero, 1, false);
             }
+
+
+            //Adds experience to the combat skills of the heroes of your party
+            //and adds experience to the troops in your party
+            foreach (TroopRosterElement troop in party.MemberRoster.GetTroopRoster())
+            {
+                if (!troop.Character.IsHero && !troop.Character.IsPlayerCharacter)
+                {
+                    party.MemberRoster.AddXpToTroop((int)xpGain, troop.Character);
+                }
+
+                if (troop.Character.IsHero && !troop.Character.IsPlayerCharacter)
+                {
+                    Hero hero = troop.Character.HeroObject;
+
+                    hero.AddSkillXp(DefaultSkills.OneHanded, xpGain);
+                    hero.AddSkillXp(DefaultSkills.TwoHanded, xpGain);
+                    hero.AddSkillXp(DefaultSkills.Polearm, xpGain);
+                    hero.AddSkillXp(DefaultSkills.Bow, xpGain);
+                    hero.AddSkillXp(DefaultSkills.Crossbow, xpGain);
+                    hero.AddSkillXp(DefaultSkills.Throwing, xpGain);
+                    hero.AddSkillXp(DefaultSkills.Athletics, xpGain);
+                }
+            }
+
+
+            //Calculates the experience the player hero should get
+            SkillLevelingManager.OnCombatHit(affectorCharacter, affectedCharacter, null, null, lastSpeedBonus,
+                lastShotDifficulty, attackerWeapon, hitpointRatio, 0,
+                affectorAgent.MountAgent != null, affectorAgent.Team == affectedAgent.Team, false,
+                damageAmount, isFatal);
 
             return false;
         }
