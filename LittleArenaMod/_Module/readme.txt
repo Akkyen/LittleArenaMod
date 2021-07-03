@@ -2,6 +2,9 @@ LittleArenaMod (Arena Buff) v1.0.2
 
 I've buffed the Arena, so it can get you BUFF (you can use it for practice).
 
+v1.0.4
+Fixed a problem with heroes in the player party getting double xp
+
 v1.0.3
 Now all heroes in your party and only heroes in your party get the xp gain
 
